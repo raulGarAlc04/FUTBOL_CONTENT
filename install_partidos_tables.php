@@ -67,6 +67,34 @@ try {
         echo "Skip: competicion.football_data_season ya existe\n";
     }
 
+    if (!columnExists($pdo, 'competicion', 'thesportsdb_league_id')) {
+        $pdo->exec('ALTER TABLE competicion ADD COLUMN thesportsdb_league_id VARCHAR(24) NULL DEFAULT NULL');
+        echo "OK: competicion.thesportsdb_league_id\n";
+    } else {
+        echo "Skip: competicion.thesportsdb_league_id ya existe\n";
+    }
+
+    if (!columnExists($pdo, 'competicion', 'thesportsdb_season')) {
+        $pdo->exec("ALTER TABLE competicion ADD COLUMN thesportsdb_season VARCHAR(20) NULL DEFAULT NULL COMMENT 'Ej 2024-2025'");
+        echo "OK: competicion.thesportsdb_season\n";
+    } else {
+        echo "Skip: competicion.thesportsdb_season ya existe\n";
+    }
+
+    if (!columnExists($pdo, 'competicion', 'api_football_league_id')) {
+        $pdo->exec('ALTER TABLE competicion ADD COLUMN api_football_league_id INT NULL DEFAULT NULL');
+        echo "OK: competicion.api_football_league_id\n";
+    } else {
+        echo "Skip: competicion.api_football_league_id ya existe\n";
+    }
+
+    if (!columnExists($pdo, 'competicion', 'api_football_season')) {
+        $pdo->exec('ALTER TABLE competicion ADD COLUMN api_football_season SMALLINT NULL DEFAULT NULL');
+        echo "OK: competicion.api_football_season\n";
+    } else {
+        echo "Skip: competicion.api_football_season ya existe\n";
+    }
+
     if (!tableExists($pdo, 'partido')) {
         $pdo->exec("
             CREATE TABLE partido (

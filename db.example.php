@@ -21,4 +21,7 @@ try {
 
 // Opcional: token gratuito de https://www.football-data.org/ para importar partidos (admin).
 // define('FOOTBALL_DATA_TOKEN', 'pega_aqui_tu_token');
+
+// Opcional: clave de https://www.api-football.com/ (cabecera x-apisports-key) para importar muchas ligas.
+// define('API_FOOTBALL_KEY', 'pega_aqui_tu_clave');
 ?>

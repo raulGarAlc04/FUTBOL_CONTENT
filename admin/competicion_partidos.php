@@ -180,7 +180,7 @@ $sugEl = partidos_sugerir_es_eliminatoria($tipoNombre);
             <p style="color:var(--text-muted); margin:8px 0 0;"><?= htmlspecialchars($tipoNombre) ?> · <?= htmlspecialchars((string) $comp['temporada_actual']) ?></p>
         </div>
         <div style="display:flex; flex-wrap:wrap; gap:10px;">
-            <a href="competicion_import_footballdata.php?id=<?= $competicion_id ?>" class="btn-admin" style="margin:0; background:rgba(59,130,246,0.25); border:1px solid rgba(59,130,246,0.4);">Importar API</a>
+            <a href="competicion_import_api.php?id=<?= $competicion_id ?>" class="btn-admin" style="margin:0; background:rgba(59,130,246,0.25); border:1px solid rgba(59,130,246,0.4);">Importar API</a>
             <a href="competicion_participantes.php?id=<?= $competicion_id ?>" class="btn-admin" style="margin:0; background:var(--secondary-color);">Equipos</a>
             <a href="competicion_clasificacion.php?id=<?= $competicion_id ?>" class="btn-admin" style="margin:0; background:rgba(255,255,255,0.06); color:var(--text-muted);">Clasificación</a>
             <a href="competiciones.php" class="btn-admin btn-admin--ghost" style="margin:0;">Competiciones</a>
@@ -199,7 +199,7 @@ $sugEl = partidos_sugerir_es_eliminatoria($tipoNombre);
         <ul style="margin:10px 0 0 18px; color:var(--text-muted); line-height:1.6;">
             <li><strong>Liga</strong>: partidos sin “eliminatoria”. Al finalizar, la tabla de clasificación se recalcula sola (3-1-0, goles).</li>
             <li><strong>Eliminatoria</strong> o <strong>Grupos + eliminatoria</strong>: marca partidos KO con “Eliminatoria”. El perdedor queda <strong>eliminado</strong> (no sale en la web ni puede usarse en nuevos partidos hasta revertir resultados).</li>
-            <li>Empate en KO: rellena <strong>penales</strong> (ej. 4-3). Opción automática: <a href="competicion_import_footballdata.php?id=<?= $competicion_id ?>">football-data.org</a>.</li>
+            <li>Empate en KO: rellena <strong>penales</strong> (ej. 4-3). Importación: <a href="competicion_import_api.php?id=<?= $competicion_id ?>">TheSportsDB / API-Football / football-data</a>.</li>
         </ul>
     </div>
 
