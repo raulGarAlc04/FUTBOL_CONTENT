@@ -1,9 +1,9 @@
 <?php
 require_once 'db.php';
+$page_title = 'Búsqueda';
 include 'includes/header.php';
 
-$q = $_GET['q'] ?? '';
-$q = trim($q);
+$q = isset($_GET['q']) ? trim((string) $_GET['q']) : '';
 
 $equipos = [];
 $jugadores = [];
@@ -12,139 +12,124 @@ $competiciones = [];
 if ($q !== '') {
     $searchTerm = '%' . $q . '%';
 
-    // Buscar Equipos
-    $stmt = $pdo->prepare("SELECT * FROM equipo WHERE nombre LIKE ? ORDER BY nombre ASC LIMIT 10");
+    $stmt = $pdo->prepare("SELECT * FROM equipo WHERE nombre LIKE ? ORDER BY nombre ASC LIMIT 12");
     $stmt->execute([$searchTerm]);
     $equipos = $stmt->fetchAll();
 
-    // Buscar Jugadores
-    $stmt = $pdo->prepare("SELECT j.*, e.nombre as equipo_nombre FROM jugadores j LEFT JOIN equipo e ON j.equipo_actual_id = e.id WHERE j.nombre LIKE ? ORDER BY j.nombre ASC LIMIT 10");
+    $stmt = $pdo->prepare("
+        SELECT j.*, e.nombre AS equipo_nombre
+        FROM jugadores j
+        LEFT JOIN equipo e ON j.equipo_actual_id = e.id
+        WHERE j.nombre LIKE ?
+        ORDER BY j.nombre ASC
+        LIMIT 12
+    ");
     $stmt->execute([$searchTerm]);
     $jugadores = $stmt->fetchAll();
 
-    // Buscar Competiciones
-    $stmt = $pdo->prepare("SELECT * FROM competicion WHERE nombre LIKE ? ORDER BY nombre ASC LIMIT 10");
+    $stmt = $pdo->prepare("SELECT * FROM competicion WHERE nombre LIKE ? ORDER BY nombre ASC LIMIT 12");
     $stmt->execute([$searchTerm]);
     $competiciones = $stmt->fetchAll();
 }
+
+$hasResults = $q !== '' && (!empty($equipos) || !empty($jugadores) || !empty($competiciones));
 ?>
 
-<div class="container" style="margin-top: 40px; margin-bottom: 60px;">
-    <h1>Resultados de búsqueda: "
-        <?= htmlspecialchars($q) ?>"
-    </h1>
+<div class="container search-shell">
+    <h1 class="search-title">Búsqueda<?php if ($q !== ''): ?>: <span class="search-query"><?= htmlspecialchars($q) ?></span><?php endif; ?></h1>
 
     <?php if ($q === ''): ?>
-        <p style="color: var(--text-muted); margin-top: 20px;">Por favor, introduce un término de búsqueda en la página de
-            inicio.</p>
-    <?php elseif (empty($equipos) && empty($jugadores) && empty($competiciones)): ?>
-        <p style="color: var(--text-muted); margin-top: 20px;">No se encontraron resultados para "
-            <?= htmlspecialchars($q) ?>".
-        </p>
+        <p class="search-lead">Escribe en el buscador del menú o en la página de inicio para ver equipos, jugadores y competiciones.</p>
+    <?php elseif (!$hasResults): ?>
+        <p class="search-lead">No hay resultados para «<?= htmlspecialchars($q) ?>». Prueba con otro nombre o revisa la ortografía.</p>
     <?php else: ?>
-
-        <div
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; margin-top: 40px;">
-
-            <!-- Resultados Equipos -->
+        <div class="search-columns">
             <?php if (!empty($equipos)): ?>
-                <div>
-                    <h2 style="border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px;">🛡️
-                        Equipos</h2>
-                    <div
-                        style="background: var(--secondary-color); border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+                <section>
+                    <h2 class="search-col-title">Equipos</h2>
+                    <div class="search-list">
                         <?php foreach ($equipos as $eq): ?>
-                            <a href="equipo.php?id=<?= $eq['id'] ?>"
-                                style="display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); text-decoration: none; color: inherit; transition: background 0.2s;"
-                                onmouseover="this.style.background='rgba(255,255,255,0.05)'"
-                                onmouseout="this.style.background='transparent'">
-                                <?php if (!empty($eq['escudo_url'])): ?>
-                                    <img src="<?= htmlspecialchars($eq['escudo_url']) ?>"
-                                        style="width: 30px; height: 30px; object-fit: contain;">
-                                <?php else: ?>
-                                    <div
-                                        style="width: 30px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
-                                        🛡️</div>
-                                <?php endif; ?>
-                                <div style="font-weight: bold;">
-                                    <?= htmlspecialchars($eq['nombre']) ?>
+                            <a class="search-row" href="equipo.php?id=<?= (int) $eq['id'] ?>">
+                                <span class="search-row-thumb">
+                                    <?php if (!empty($eq['escudo_url'])): ?>
+                                        <img src="<?= htmlspecialchars($eq['escudo_url']) ?>" alt="">
+                                    <?php else: ?>
+                                        <span aria-hidden="true">🛡️</span>
+                                    <?php endif; ?>
+                                </span>
+                                <div class="search-row-body">
+                                    <strong><?= htmlspecialchars($eq['nombre']) ?></strong>
                                 </div>
                             </a>
                         <?php endforeach; ?>
                     </div>
-                </div>
+                </section>
             <?php endif; ?>
 
-            <!-- Resultados Jugadores -->
             <?php if (!empty($jugadores)): ?>
-                <div>
-                    <h2 style="border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px;">🏃
-                        Jugadores</h2>
-                    <div
-                        style="background: var(--secondary-color); border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+                <section>
+                    <h2 class="search-col-title">Jugadores</h2>
+                    <div class="search-list">
                         <?php foreach ($jugadores as $jug): ?>
-                            <div
-                                style="display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <?php if (!empty($jug['foto_url'])): ?>
-                                    <img src="<?= htmlspecialchars($jug['foto_url']) ?>"
-                                        style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
-                                <?php else: ?>
-                                    <div
-                                        style="width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
-                                        👤</div>
-                                <?php endif; ?>
-                                <div>
-                                    <div style="font-weight: bold;">
-                                        <?= htmlspecialchars($jug['nombre']) ?>
-                                    </div>
-                                    <div style="font-size: 0.85rem; color: var(--text-muted);">
-                                        <?= htmlspecialchars($jug['equipo_nombre'] ?? 'Sin equipo') ?> •
-                                        <?= htmlspecialchars($jug['posicion']) ?>
+                            <?php $tid = isset($jug['equipo_actual_id']) ? (int) $jug['equipo_actual_id'] : 0; ?>
+                            <?php if ($tid > 0): ?>
+                                <a class="search-row" href="equipo.php?id=<?= $tid ?>">
+                            <?php else: ?>
+                                <div class="search-row search-row-static">
+                            <?php endif; ?>
+                                <span class="search-row-thumb round">
+                                    <?php if (!empty($jug['foto_url'])): ?>
+                                        <img src="<?= htmlspecialchars($jug['foto_url']) ?>" alt="">
+                                    <?php else: ?>
+                                        <span aria-hidden="true">👤</span>
+                                    <?php endif; ?>
+                                </span>
+                                <div class="search-row-body">
+                                    <strong><?= htmlspecialchars($jug['nombre']) ?></strong>
+                                    <div class="search-row-sub">
+                                        <?= htmlspecialchars($jug['equipo_nombre'] ?? 'Sin equipo') ?>
+                                        <?php if (!empty($jug['posicion'])): ?>
+                                            · <?= htmlspecialchars($jug['posicion']) ?>
+                                        <?php endif; ?>
+                                        <?php if ($tid > 0): ?>
+                                            <span class="search-row-hint"> · Plantilla</span>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
-                            </div>
+                            <?php if ($tid > 0): ?>
+                                </a>
+                            <?php else: ?>
+                                </div>
+                            <?php endif; ?>
                         <?php endforeach; ?>
                     </div>
-                </div>
+                </section>
             <?php endif; ?>
 
-            <!-- Resultados Competiciones -->
             <?php if (!empty($competiciones)): ?>
-                <div>
-                    <h2 style="border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px;">🏆
-                        Competiciones</h2>
-                    <div
-                        style="background: var(--secondary-color); border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+                <section>
+                    <h2 class="search-col-title">Competiciones</h2>
+                    <div class="search-list">
                         <?php foreach ($competiciones as $comp): ?>
-                            <a href="competicion.php?id=<?= $comp['id'] ?>"
-                                style="display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); text-decoration: none; color: inherit; transition: background 0.2s;"
-                                onmouseover="this.style.background='rgba(255,255,255,0.05)'"
-                                onmouseout="this.style.background='transparent'">
-                                <?php if (!empty($comp['logo_url'])): ?>
-                                    <img src="<?= htmlspecialchars($comp['logo_url']) ?>"
-                                        style="width: 30px; height: 30px; object-fit: contain;">
-                                <?php else: ?>
-                                    <div
-                                        style="width: 30px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
-                                        🏆</div>
-                                <?php endif; ?>
-                                <div>
-                                    <div style="font-weight: bold;">
-                                        <?= htmlspecialchars($comp['nombre']) ?>
-                                    </div>
-                                    <div style="font-size: 0.85rem; color: var(--text-muted);">Temporada
-                                        <?= htmlspecialchars($comp['temporada_actual']) ?>
-                                    </div>
+                            <a class="search-row" href="competicion.php?id=<?= (int) $comp['id'] ?>">
+                                <span class="search-row-thumb">
+                                    <?php if (!empty($comp['logo_url'])): ?>
+                                        <img src="<?= htmlspecialchars($comp['logo_url']) ?>" alt="">
+                                    <?php else: ?>
+                                        <span aria-hidden="true">🏆</span>
+                                    <?php endif; ?>
+                                </span>
+                                <div class="search-row-body">
+                                    <strong><?= htmlspecialchars($comp['nombre']) ?></strong>
+                                    <div class="search-row-sub">Temporada <?= htmlspecialchars($comp['temporada_actual']) ?></div>
                                 </div>
                             </a>
                         <?php endforeach; ?>
                     </div>
-                </div>
+                </section>
             <?php endif; ?>
-
         </div>
     <?php endif; ?>
-
 </div>
 
 <?php include 'includes/footer.php'; ?>

@@ -1,13 +1,15 @@
 <?php
 require_once 'db.php';
 require_once __DIR__ . '/includes/clasificacion_visual.php';
-include 'includes/header.php';
 
 if (!isset($_GET['id'])) {
-    echo "<div class='container' style='margin-top: 40px;'><p>Competición no especificada.</p></div>";
+    $page_title = 'Competición';
+    include 'includes/header.php';
+    echo '<div class="container page-shell"><div class="message-panel">Competición no especificada.</div></div>';
     include 'includes/footer.php';
     exit;
 }
+
 $comp_id = (int) $_GET['id'];
 
 $stmt = $pdo->prepare("SELECT c.*, tc.nombre as tipo_nombre 
@@ -18,10 +20,15 @@ $stmt->execute([$comp_id]);
 $comp = $stmt->fetch();
 
 if (!$comp) {
-    echo "<div class='container' style='margin-top: 40px;'><p>Competición no encontrada.</p></div>";
+    $page_title = 'Competición';
+    include 'includes/header.php';
+    echo '<div class="container page-shell"><div class="message-panel">Competición no encontrada.</div></div>';
     include 'includes/footer.php';
     exit;
 }
+
+$page_title = $comp['nombre'];
+include 'includes/header.php';
 
 $stmtClas = $pdo->prepare("
     SELECT 
@@ -72,32 +79,30 @@ $stmtEquipos->execute([$comp_id]);
 $equipos = $stmtEquipos->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<div class="container" style="margin-top: 40px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--accent-color); padding-bottom: 20px; margin-bottom: 30px;">
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 10px;">
+<div class="container page-shell">
+    <header class="page-hero">
+        <div class="page-hero-main">
+            <div class="page-hero-logo">
                 <?php if (!empty($comp['logo_url'])): ?>
-                    <img src="<?= htmlspecialchars($comp['logo_url']) ?>" style="max-width: 100%; max-height: 100%;">
+                    <img src="<?= htmlspecialchars($comp['logo_url']) ?>" alt="">
                 <?php else: ?>
-                    <span style="font-size: 2.5rem;">🏆</span>
+                    <span class="page-hero-icon" aria-hidden="true">🏆</span>
                 <?php endif; ?>
             </div>
             <div>
-                <h1 style="margin: 0; line-height: 1;"><?= htmlspecialchars($comp['nombre']) ?></h1>
-                <div style="margin-top: 5px; color: var(--text-muted);">
-                    <?= htmlspecialchars($comp['tipo_nombre']) ?> • <?= htmlspecialchars($comp['temporada_actual']) ?>
-                </div>
+                <h1 class="page-hero-title"><?= htmlspecialchars($comp['nombre']) ?></h1>
+                <p class="page-hero-meta">
+                    <?= htmlspecialchars($comp['tipo_nombre']) ?> · <?= htmlspecialchars($comp['temporada_actual']) ?>
+                </p>
             </div>
         </div>
-        <button onclick="history.back()" style="background-color: var(--secondary-color); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
-            ⬅ Volver
-        </button>
-    </div>
+        <button type="button" class="btn-back" onclick="history.back()">← Volver</button>
+    </header>
 
     <section style="margin-bottom: 40px;">
         <h2 class="section-title">Clasificación</h2>
         <?php if (empty($clasificacion)): ?>
-            <div class="admin-card" style="padding: 25px; color: var(--text-muted);">No hay equipos inscritos.</div>
+            <div class="message-panel">No hay equipos inscritos.</div>
         <?php else: ?>
             <div class="admin-card" style="padding: 0; overflow: hidden;">
                 <div class="table-wrap">
@@ -141,9 +146,9 @@ $equipos = $stmtEquipos->fetchAll(PDO::FETCH_ASSOC);
                                     <td>
                                         <div style="display: flex; align-items: center; gap: 12px;">
                                             <?php if (!empty($row['escudo_url'])): ?>
-                                                <img src="<?= htmlspecialchars($row['escudo_url']) ?>" style="width: 28px; height: 28px; object-fit: contain;">
+                                                <img src="<?= htmlspecialchars($row['escudo_url']) ?>" alt="" style="width: 28px; height: 28px; object-fit: contain;">
                                             <?php else: ?>
-                                                <div style="width: 28px; height: 28px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">🛡️</div>
+                                                <div style="width: 28px; height: 28px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;" aria-hidden="true">🛡️</div>
                                             <?php endif; ?>
                                             <a href="equipo.php?id=<?= (int) $row['equipo_id'] ?>" style="text-decoration: none; color: #fff; font-weight: 700;">
                                                 <?= htmlspecialchars($row['nombre']) ?>
@@ -166,13 +171,13 @@ $equipos = $stmtEquipos->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <?php if (!empty($marcasVisuales)): ?>
                 <div class="admin-card" style="padding: 18px 20px; margin-top: 14px;">
-                    <div style="font-weight: 800; margin-bottom: 10px;">Leyenda</div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                    <div style="font-weight: 800; margin-bottom: 12px;">Leyenda</div>
+                    <div class="legend-strip">
                         <?php foreach ($marcasVisuales as $m): ?>
-                            <div style="display: inline-flex; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px;">
-                                <span style="width: 12px; height: 12px; border-radius: 4px; background: <?= htmlspecialchars($m['color']) ?>;"></span>
-                                <span style="font-weight: 700;"><?= htmlspecialchars($m['nombre']) ?></span>
-                                <span style="color: var(--text-muted); font-size: 0.95rem;">(<?= htmlspecialchars($m['posiciones']) ?>)</span>
+                            <div class="legend-item">
+                                <span class="legend-swatch" style="background: <?= htmlspecialchars($m['color']) ?>;"></span>
+                                <span class="legend-name"><?= htmlspecialchars($m['nombre']) ?></span>
+                                <span class="legend-pos"><?= htmlspecialchars($m['posiciones']) ?></span>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -184,14 +189,14 @@ $equipos = $stmtEquipos->fetchAll(PDO::FETCH_ASSOC);
     <section style="margin-bottom: 60px;">
         <h2 class="section-title">Equipos</h2>
         <?php if (empty($equipos)): ?>
-            <div class="admin-card" style="padding: 25px; color: var(--text-muted);">No hay equipos inscritos.</div>
+            <div class="message-panel">No hay equipos inscritos.</div>
         <?php else: ?>
             <div class="competitions-grid" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));">
                 <?php foreach ($equipos as $eq): ?>
                     <a href="equipo.php?id=<?= (int) $eq['id'] ?>" class="comp-card">
                         <div class="comp-card-header" style="justify-content: flex-start; gap: 12px;">
                             <?php if (!empty($eq['escudo_url'])): ?>
-                                <img src="<?= htmlspecialchars($eq['escudo_url']) ?>" class="comp-logo" style="width: 44px; height: 44px; object-fit: contain;">
+                                <img src="<?= htmlspecialchars($eq['escudo_url']) ?>" class="comp-logo" style="width: 44px; height: 44px; object-fit: contain;" alt="">
                             <?php else: ?>
                                 <div class="comp-logo-placeholder" style="width: 44px; height: 44px;">🛡️</div>
                             <?php endif; ?>
@@ -199,7 +204,7 @@ $equipos = $stmtEquipos->fetchAll(PDO::FETCH_ASSOC);
                                 <h3 style="margin: 0; color: #fff;"><?= htmlspecialchars($eq['nombre']) ?></h3>
                                 <div class="comp-meta">
                                     <?php if (!empty($eq['bandera_url'])): ?>
-                                        <img src="<?= htmlspecialchars($eq['bandera_url']) ?>" style="width: 16px;">
+                                        <img src="<?= htmlspecialchars($eq['bandera_url']) ?>" alt="" class="comp-flag">
                                     <?php endif; ?>
                                     <span><?= htmlspecialchars($eq['pais_nombre'] ?? '') ?></span>
                                 </div>
