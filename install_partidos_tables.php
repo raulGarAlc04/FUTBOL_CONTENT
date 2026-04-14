@@ -24,6 +24,20 @@ function tableExists(PDO $pdo, string $table): bool
     return (int) $s->fetchColumn() > 0;
 }
 
+function indexExists(PDO $pdo, string $table, string $indexName): bool
+{
+    $s = $pdo->query('SHOW INDEX FROM `' . str_replace('`', '', $table) . '`');
+    if (!$s) {
+        return false;
+    }
+    foreach ($s->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        if (($row['Key_name'] ?? '') === $indexName) {
+            return true;
+        }
+    }
+    return false;
+}
+
 try {
     if (!columnExists($pdo, 'competicion_equipo', 'eliminado')) {
         $pdo->exec('ALTER TABLE competicion_equipo ADD COLUMN eliminado TINYINT(1) NOT NULL DEFAULT 0');
@@ -86,7 +100,68 @@ try {
         ");
         echo "OK: tabla partido creada\n";
     } else {
-        echo "Skip: tabla partido ya existe\n";
+        echo "Skip: tabla partido ya existe — comprobando columnas…\n";
+        $nPartidos = (int) $pdo->query('SELECT COUNT(*) FROM partido')->fetchColumn();
+        $hasRows = $nPartidos > 0;
+        $fkInt = $hasRows ? 'INT NULL' : 'INT NOT NULL';
+
+        $partidoCols = [
+            ['competicion_id', $fkInt],
+            ['fase', "VARCHAR(64) NOT NULL DEFAULT 'Liga'"],
+            ['jornada', 'SMALLINT NULL'],
+            ['grupo_letra', 'CHAR(1) NULL'],
+            ['es_eliminatoria', 'TINYINT(1) NOT NULL DEFAULT 0'],
+            ['orden_fase', 'SMALLINT NOT NULL DEFAULT 0'],
+            ['equipo_local_id', $fkInt],
+            ['equipo_visitante_id', $fkInt],
+            ['goles_local', 'SMALLINT NULL'],
+            ['goles_visitante', 'SMALLINT NULL'],
+            ['penales_local', 'SMALLINT NULL'],
+            ['penales_visitante', 'SMALLINT NULL'],
+            ['fecha', 'DATE NULL'],
+            ["estado", "ENUM('programado','finalizado') NOT NULL DEFAULT 'programado'"],
+            ['notas', 'VARCHAR(255) NULL'],
+            ['api_match_id', 'VARCHAR(40) NULL'],
+            ['api_fuente', 'VARCHAR(24) NULL'],
+            ['created_at', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP'],
+            ['updated_at', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'],
+        ];
+        foreach ($partidoCols as [$col, $def]) {
+            if (!columnExists($pdo, 'partido', $col)) {
+                $pdo->exec("ALTER TABLE partido ADD COLUMN `{$col}` {$def}");
+                echo "OK: partido.{$col} añadida\n";
+            }
+        }
+        if ($hasRows) {
+            echo "AVISO: la tabla partido tenía filas. Si se añadieron columnas como NULL, complétalas en phpMyAdmin o borra filas de prueba.\n";
+        }
+    }
+
+    if (tableExists($pdo, 'partido')) {
+        if (!indexExists($pdo, 'partido', 'idx_comp_estado')) {
+            try {
+                $pdo->exec('ALTER TABLE partido ADD KEY idx_comp_estado (competicion_id, estado)');
+                echo "OK: índice idx_comp_estado\n";
+            } catch (PDOException $e) {
+                echo "Skip índice idx_comp_estado: " . $e->getMessage() . "\n";
+            }
+        }
+        if (!indexExists($pdo, 'partido', 'idx_comp_jornada')) {
+            try {
+                $pdo->exec('ALTER TABLE partido ADD KEY idx_comp_jornada (competicion_id, jornada)');
+                echo "OK: índice idx_comp_jornada\n";
+            } catch (PDOException $e) {
+                echo "Skip índice idx_comp_jornada: " . $e->getMessage() . "\n";
+            }
+        }
+        if (!indexExists($pdo, 'partido', 'idx_comp_api')) {
+            try {
+                $pdo->exec('ALTER TABLE partido ADD KEY idx_comp_api (competicion_id, api_match_id)');
+                echo "OK: índice idx_comp_api\n";
+            } catch (PDOException $e) {
+                echo "Skip índice idx_comp_api: " . $e->getMessage() . "\n";
+            }
+        }
     }
 
     echo "\nInstalación / comprobación completada.\n";
