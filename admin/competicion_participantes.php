@@ -59,6 +59,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['equipo_id'])) {
     }
 }
 
+// Guardar grupos (fase de grupos)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_grupos') {
+    foreach ($_POST['grupo'] ?? [] as $eid => $val) {
+        $eid = (int) $eid;
+        if ($eid <= 0) {
+            continue;
+        }
+        $g = strtoupper(trim((string) $val));
+        $g = ($g === '' || $g === '-') ? null : substr($g, 0, 1);
+        try {
+            $pdo->prepare('UPDATE competicion_equipo SET grupo_letra = ? WHERE competicion_id = ? AND equipo_id = ?')->execute([$g, $competicion_id, $eid]);
+        } catch (PDOException $e) {
+            // columna no instalada: ejecutar install_partidos_tables.php
+        }
+    }
+    echo "<script>window.location.href='competicion_participantes.php?id=$competicion_id';</script>";
+    exit;
+}
+
 // Eliminar Equipo
 if (isset($_GET['remove'])) {
     $remove_id = $_GET['remove'];
@@ -70,7 +89,7 @@ if (isset($_GET['remove'])) {
 }
 
 // Obtener Participantes Actuales
-$sqlParticipantes = "SELECT e.* FROM equipo e 
+$sqlParticipantes = "SELECT e.*, ce.grupo_letra, COALESCE(ce.eliminado,0) AS ce_eliminado FROM equipo e 
                      JOIN competicion_equipo ce ON e.id = ce.equipo_id 
                      WHERE ce.competicion_id = ?";
 $participantes = $pdo->prepare($sqlParticipantes);
@@ -135,6 +154,7 @@ $lista_disponibles = $disponibles->fetchAll();
     <!-- TABS NAVEGACIÓN -->
     <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
         <a href="#" class="btn-admin" style="background: var(--accent-color); color: white; margin-left: 0;">Equipos</a>
+        <a href="competicion_partidos.php?id=<?= $competicion_id ?>" class="btn-admin" style="background: rgba(255,255,255,0.05); color: var(--text-muted); margin-left: 0;">Resultados</a>
         <a href="competicion_clasificacion.php?id=<?= $competicion_id ?>" class="btn-admin" style="background: rgba(255,255,255,0.05); color: var(--text-muted); margin-left: 0;">Clasificación</a>
     </div>
 
@@ -150,7 +170,30 @@ $lista_disponibles = $disponibles->fetchAll();
         <div>
             <div class="admin-card" style="padding: 25px; margin-bottom: 20px;">
                 <h2 style="font-size: 1.5rem; color: #fff; margin-bottom: 10px;">Equipos Inscritos (<?= count($lista_participantes) ?>)</h2>
+                <?php if ($comp['tipo_nombre'] === 'Fase de grupos y eliminatoria'): ?>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Asigna letra de grupo (A, B…) para filtrar la clasificación por partidos de grupo.</p>
+                <?php endif; ?>
             </div>
+
+            <?php if ($comp['tipo_nombre'] === 'Fase de grupos y eliminatoria' && !empty($lista_participantes)): ?>
+                <form method="POST" class="admin-card" style="padding: 18px 20px; margin-bottom: 20px;">
+                    <input type="hidden" name="action" value="save_grupos">
+                    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                        <?php foreach ($lista_participantes as $eq): ?>
+                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);">
+                                <span style="font-size: 0.85rem; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?= htmlspecialchars($eq['nombre']) ?></span>
+                                <select name="grupo[<?= (int) $eq['id'] ?>]" class="form-control-admin" style="width: 64px; padding: 6px;">
+                                    <option value="">—</option>
+                                    <?php foreach (range('A', 'H') as $L): ?>
+                                        <option value="<?= $L ?>" <?= (isset($eq['grupo_letra']) && strtoupper((string) $eq['grupo_letra']) === $L) ? 'selected' : '' ?>><?= $L ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <button type="submit" class="btn-admin" style="margin-top: 14px; margin-left: 0; border: none; cursor: pointer;">Guardar grupos</button>
+                </form>
+            <?php endif; ?>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
                 <?php foreach ($lista_participantes as $eq): ?>
@@ -161,7 +204,14 @@ $lista_disponibles = $disponibles->fetchAll();
                             <?php else: ?>
                                 <div style="width: 28px; height: 28px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">🛡️</div>
                             <?php endif; ?>
-                            <span style="font-weight: 600; color: #fff;"><?= htmlspecialchars($eq['nombre']) ?></span>
+                            <div>
+                                <span style="font-weight: 600; color: #fff;"><?= htmlspecialchars($eq['nombre']) ?></span>
+                                <?php if (!empty($eq['ce_eliminado'])): ?>
+                                    <span class="badge badge-danger" style="margin-left:6px;">Eliminado</span>
+                                <?php elseif (!empty($eq['grupo_letra'])): ?>
+                                    <span class="badge badge-info" style="margin-left:6px;">Grupo <?= htmlspecialchars(strtoupper((string) $eq['grupo_letra'])) ?></span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <a href="competicion_participantes.php?id=<?= $competicion_id ?>&remove=<?= $eq['id'] ?>" 
                            onclick="return confirm('¿Retirar a <?= addslashes($eq['nombre']) ?> de esta competición?')"

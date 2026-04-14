@@ -8,16 +8,21 @@ $error = null;
 // Obtener datos para desplegables
 $paises = $pdo->query("SELECT * FROM pais ORDER BY nombre ASC")->fetchAll();
 $continentes = $pdo->query("SELECT * FROM continente ORDER BY nombre ASC")->fetchAll();
-$stmtLiga = $pdo->prepare("SELECT id, nombre FROM tipo_competicion WHERE nombre = 'Liga' LIMIT 1");
-$stmtLiga->execute();
-$ligaTipo = $stmtLiga->fetch(PDO::FETCH_ASSOC);
+$tiposCompeticion = $pdo->query('SELECT id, nombre FROM tipo_competicion ORDER BY nombre ASC')->fetchAll(PDO::FETCH_ASSOC);
+if (!$tiposCompeticion) {
+    die('No hay tipos de competición en la base de datos.');
+}
+$ligaTipo = null;
+foreach ($tiposCompeticion as $t) {
+    if ($t['nombre'] === 'Liga') {
+        $ligaTipo = $t;
+        break;
+    }
+}
 if (!$ligaTipo) {
-    $ligaTipo = $pdo->query("SELECT id, nombre FROM tipo_competicion ORDER BY id ASC LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+    $ligaTipo = $tiposCompeticion[0];
 }
-$ligaTipoId = $ligaTipo ? (int) $ligaTipo['id'] : null;
-if (!$ligaTipoId) {
-    die("No existe el tipo de competición 'Liga' en la base de datos.");
-}
+$ligaTipoId = (int) $ligaTipo['id'];
 
 // Si viene un ID, estamos editando
 if (isset($_GET['id'])) {
@@ -39,7 +44,17 @@ if ($competicion) {
 // Procesar Formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre']);
-    $tipo_competicion_id = $ligaTipoId;
+    $tipo_competicion_id = (int) ($_POST['tipo_competicion_id'] ?? $ligaTipoId);
+    $tipoOk = false;
+    foreach ($tiposCompeticion as $t) {
+        if ((int) $t['id'] === $tipo_competicion_id) {
+            $tipoOk = true;
+            break;
+        }
+    }
+    if (!$tipoOk) {
+        $tipo_competicion_id = $ligaTipoId;
+    }
     $temporada_actual = trim($_POST['temporada_actual']);
     $logo_url = trim($_POST['logo_url']);
     $id = $_POST['id'] ?? null;
@@ -131,10 +146,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div style="margin-bottom: 20px;">
                 <label for="tipo_competicion_id"
-                    style="display: block; margin-bottom: 8px; font-weight: 500;">Tipo</label>
-                <input type="hidden" name="tipo_competicion_id" value="<?= $ligaTipoId ?>">
-                <input type="text" value="<?= htmlspecialchars($ligaTipo['nombre'] ?? 'Liga') ?>" readonly
-                    style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; opacity: 0.9;">
+                    style="display: block; margin-bottom: 8px; font-weight: 500;">Tipo de competición</label>
+                <select id="tipo_competicion_id" name="tipo_competicion_id"
+                    style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white;">
+                    <?php
+                    $tipoSel = $competicion ? (int) $competicion['tipo_competicion_id'] : $ligaTipoId;
+                    foreach ($tiposCompeticion as $t): ?>
+                        <option value="<?= (int) $t['id'] ?>" <?= (int) $t['id'] === $tipoSel ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($t['nombre']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 8px;">
+                    Eliminatoria y «Grupos + eliminatoria» usan la gestión de <strong>resultados</strong> para eliminar perdedores de la edición.
+                </p>
             </div>
 
             <!-- Selector de País (Solo Nacional) -->

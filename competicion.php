@@ -45,7 +45,7 @@ $stmtClas = $pdo->prepare("
     FROM competicion_equipo ce
     JOIN equipo e ON ce.equipo_id = e.id
     LEFT JOIN clasificacion c ON c.competicion_id = ce.competicion_id AND c.equipo_id = e.id
-    WHERE ce.competicion_id = ?
+    WHERE ce.competicion_id = ? AND COALESCE(ce.eliminado, 0) = 0
 ");
 $stmtClas->execute([$comp_id]);
 $clasificacion = $stmtClas->fetchAll(PDO::FETCH_ASSOC);
@@ -72,11 +72,27 @@ $stmtEquipos = $pdo->prepare("
     FROM equipo e
     JOIN competicion_equipo ce ON e.id = ce.equipo_id
     LEFT JOIN pais p ON e.pais_id = p.id
-    WHERE ce.competicion_id = ?
+    WHERE ce.competicion_id = ? AND COALESCE(ce.eliminado, 0) = 0
     ORDER BY e.nombre ASC
 ");
 $stmtEquipos->execute([$comp_id]);
 $equipos = $stmtEquipos->fetchAll(PDO::FETCH_ASSOC);
+
+$partidosLista = [];
+try {
+    $stmtP = $pdo->prepare(
+        "SELECT p.*, el.nombre AS nl, ev.nombre AS nv
+         FROM partido p
+         JOIN equipo el ON el.id = p.equipo_local_id
+         JOIN equipo ev ON ev.id = p.equipo_visitante_id
+         WHERE p.competicion_id = ?
+         ORDER BY p.es_eliminatoria ASC, p.orden_fase ASC, p.jornada ASC, p.fecha ASC, p.id ASC"
+    );
+    $stmtP->execute([$comp_id]);
+    $partidosLista = $stmtP->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $partidosLista = [];
+}
 ?>
 
 <div class="container page-shell">
@@ -98,6 +114,49 @@ $equipos = $stmtEquipos->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <button type="button" class="btn-back" onclick="history.back()">← Volver</button>
     </header>
+
+    <?php if (!empty($partidosLista)): ?>
+        <section style="margin-bottom: 40px;">
+            <h2 class="section-title">Partidos</h2>
+            <div class="admin-card" style="padding: 0; overflow: hidden;">
+                <div class="table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Fase</th>
+                                <th>J.</th>
+                                <th>Local</th>
+                                <th style="text-align:center;">Resultado</th>
+                                <th>Visitante</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($partidosLista as $pt): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($pt['fase']) ?><?= !empty($pt['es_eliminatoria']) ? ' · KO' : '' ?></td>
+                                    <td><?= $pt['jornada'] !== null ? (int) $pt['jornada'] : '—' ?></td>
+                                    <td><?= htmlspecialchars($pt['nl']) ?></td>
+                                    <td style="text-align:center; font-weight:800;">
+                                        <?php if ($pt['estado'] === 'finalizado' && $pt['goles_local'] !== null && $pt['goles_visitante'] !== null): ?>
+                                            <?= (int) $pt['goles_local'] ?> – <?= (int) $pt['goles_visitante'] ?>
+                                            <?php if ($pt['penales_local'] !== null && $pt['penales_visitante'] !== null): ?>
+                                                <span style="font-size:0.78rem; color:var(--text-muted); font-weight:600;"> (p. <?= (int) $pt['penales_local'] ?>–<?= (int) $pt['penales_visitante'] ?>)</span>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span style="color:var(--text-muted);">vs</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?= htmlspecialchars($pt['nv']) ?></td>
+                                    <td style="color:var(--text-muted); font-size:0.9rem;"><?= $pt['fecha'] ? htmlspecialchars((string) $pt['fecha']) : '—' ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    <?php endif; ?>
 
     <section style="margin-bottom: 40px;">
         <h2 class="section-title">Clasificación</h2>

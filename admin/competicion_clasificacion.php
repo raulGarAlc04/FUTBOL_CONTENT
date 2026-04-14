@@ -372,7 +372,7 @@ usort($clasificacion, function ($a, $b) {
             <?php endif; ?>
             <div>
                 <h1 style="margin: 0; font-size: 2rem;"><?= htmlspecialchars($comp['nombre']) ?></h1>
-                <p style="color: var(--text-muted); margin: 0;">Clasificación (Manual)</p>
+                <p style="color: var(--text-muted); margin: 0;">Clasificación manual o recalculada al guardar partidos (liga / fase de grupos).</p>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
@@ -388,6 +388,7 @@ usort($clasificacion, function ($a, $b) {
 
     <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
         <a href="competicion_participantes.php?id=<?= $competicion_id ?>" class="btn-admin" style="background: rgba(255,255,255,0.05); color: var(--text-muted); margin-left: 0;">Equipos</a>
+        <a href="competicion_partidos.php?id=<?= $competicion_id ?>" class="btn-admin" style="background: rgba(255,255,255,0.05); color: var(--text-muted); margin-left: 0;">Resultados</a>
         <a href="#" class="btn-admin" style="background: var(--accent-color); color: white; margin-left: 0;">Clasificación</a>
     </div>
 

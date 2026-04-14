@@ -18,4 +18,7 @@ try {
 } catch (\PDOException $e) {
     throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
+
+// Opcional: token gratuito de https://www.football-data.org/ para importar partidos (admin).
+// define('FOOTBALL_DATA_TOKEN', 'pega_aqui_tu_token');
 ?>

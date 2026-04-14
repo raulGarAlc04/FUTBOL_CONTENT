@@ -228,6 +228,7 @@ $activeLeagues = $stmtActiveLeagues->fetchAll();
                                         </td>
                                         <td style="text-align:right; padding-right: 25px;">
                                             <div style="display:flex; justify-content:flex-end; gap: 10px; flex-wrap: wrap;">
+                                                <a href="competicion_partidos.php?id=<?= (int) $l['id'] ?>" class="btn-admin" style="margin: 0; padding: 6px 12px; background: rgba(59,130,246,0.35);">Resultados</a>
                                                 <a href="competicion_clasificacion.php?id=<?= (int) $l['id'] ?>" class="btn-admin" style="margin: 0; padding: 6px 12px; background: var(--accent-color);">Clasificación</a>
                                                 <a href="competicion_participantes.php?id=<?= (int) $l['id'] ?>" class="btn-admin" style="margin: 0; padding: 6px 12px; background: rgba(255,255,255,0.05); color: var(--text-muted);">Equipos</a>
                                             </div>

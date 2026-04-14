@@ -114,6 +114,7 @@ $competiciones = $stmt->fetchAll();
                         </td>
                         <td style="text-align: right; padding-right: 25px;">
                             <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                <a href="competicion_partidos.php?id=<?= $comp['id'] ?>" class="btn-admin" style="margin: 0; padding: 6px 12px; font-size: 0.85rem; background: rgba(59,130,246,0.35);">Resultados</a>
                                 <a href="competicion_clasificacion.php?id=<?= $comp['id'] ?>" class="btn-admin" style="margin: 0; padding: 6px 15px; font-size: 0.85rem; background: var(--accent-color);">Clasificación</a>
                                 <a href="competicion_form.php?id=<?= $comp['id'] ?>" class="btn-admin" style="margin: 0; padding: 6px 12px; font-size: 0.85rem; background: rgba(255,255,255,0.05); color: var(--text-muted);">Editar</a>
                                 <a href="competiciones.php?delete=<?= $comp['id'] ?>"
