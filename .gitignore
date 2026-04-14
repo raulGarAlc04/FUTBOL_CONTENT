@@ -1,0 +1,14 @@
+# Credenciales locales (copia db.example.php como db.php)
+db.php
+
+# Windows / IDE
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs y temporales
+*.log
+*.tmp

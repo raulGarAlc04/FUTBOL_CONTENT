@@ -1,0 +1,233 @@
+{
+    "3": [
+        {
+            "id": "8b69dd7e9d1f8314",
+            "nombre": "Campeón",
+            "color": "#00ff00",
+            "posiciones": "1",
+            "orden": 1
+        },
+        {
+            "id": "c6878d3acf3920e4",
+            "nombre": "UEFA Europa League",
+            "color": "#40e0d0",
+            "posiciones": "5",
+            "orden": 1
+        },
+        {
+            "id": "fa0e7ed50500167d",
+            "nombre": "UEFA Conference League",
+            "color": "#0000ff",
+            "posiciones": "6",
+            "orden": 1
+        },
+        {
+            "id": "b93818b96d851381",
+            "nombre": "UEFA Champions League",
+            "color": "#008000",
+            "posiciones": "1-4",
+            "orden": 2
+        },
+        {
+            "id": "c77b682d0163ca2f",
+            "nombre": "Descenso",
+            "color": "#ff0000",
+            "posiciones": "18-20",
+            "orden": 1
+        }
+    ],
+    "4": [
+        {
+            "id": "1fed7b810d248ff1",
+            "nombre": "Play-off Ascenso",
+            "color": "#40e0d0",
+            "posiciones": "3-6",
+            "orden": 1
+        },
+        {
+            "id": "d0f4a9b30c5601b0",
+            "nombre": "Ascenso",
+            "color": "#008000",
+            "posiciones": "1-2",
+            "orden": 1
+        },
+        {
+            "id": "7fc898b0398c8a2a",
+            "nombre": "Descenso",
+            "color": "#ff0000",
+            "posiciones": "19-22",
+            "orden": 1
+        }
+    ],
+    "10": [
+        {
+            "id": "145eb2a41c2bb6fc",
+            "nombre": "UEFA Europa League",
+            "color": "#40e0d0",
+            "posiciones": "6",
+            "orden": 1
+        },
+        {
+            "id": "a9b7793075e6e07b",
+            "nombre": "UEFA Conference League",
+            "color": "#0000ff",
+            "posiciones": "7",
+            "orden": 1
+        },
+        {
+            "id": "d67957fd600aa7cc",
+            "nombre": "Campeón",
+            "color": "#00ff00",
+            "posiciones": "1",
+            "orden": 1
+        },
+        {
+            "id": "725811bc86d96be3",
+            "nombre": "UEFA Champions League",
+            "color": "#008000",
+            "posiciones": "1-5",
+            "orden": 2
+        },
+        {
+            "id": "a7bbc1eef36e4314",
+            "nombre": "Descenso",
+            "color": "#ff0000",
+            "posiciones": "18-20",
+            "orden": 1
+        }
+    ],
+    "11": [
+        {
+            "id": "49895e85b0fc11e1",
+            "nombre": "Ascenso",
+            "color": "#008000",
+            "posiciones": "1-2",
+            "orden": 1
+        },
+        {
+            "id": "af6c7e2aa0322d05",
+            "nombre": "Descenso",
+            "color": "#ff0000",
+            "posiciones": "22-24",
+            "orden": 1
+        },
+        {
+            "id": "f23da7598fc98ed0",
+            "nombre": "Play-off Ascenso",
+            "color": "#40e0d0",
+            "posiciones": "3-6",
+            "orden": 1
+        }
+    ],
+    "12": [
+        {
+            "id": "09f62d4e9f84e437",
+            "nombre": "Play-off Descenso",
+            "color": "#ffd6dc",
+            "posiciones": "16",
+            "orden": 1
+        },
+        {
+            "id": "234d1447db5ce5c6",
+            "nombre": "Campeón",
+            "color": "#00ff00",
+            "posiciones": "1",
+            "orden": 1
+        },
+        {
+            "id": "a747e613c9106667",
+            "nombre": "UEFA Conference League",
+            "color": "#0000ff",
+            "posiciones": "6",
+            "orden": 1
+        },
+        {
+            "id": "c9b7869d76be7a63",
+            "nombre": "UEFA Europa League",
+            "color": "#40e0d0",
+            "posiciones": "5",
+            "orden": 1
+        },
+        {
+            "id": "2a659a44d90287ab",
+            "nombre": "UEFA Champions League",
+            "color": "#008000",
+            "posiciones": "1-4",
+            "orden": 2
+        },
+        {
+            "id": "71b88325351e2888",
+            "nombre": "Descenso",
+            "color": "#ff0000",
+            "posiciones": "17-18",
+            "orden": 1
+        }
+    ],
+    "13": [
+        {
+            "id": "4cf65ef9cf34408c",
+            "nombre": "Play-off Descenso",
+            "color": "#ffd6dc",
+            "posiciones": "16",
+            "orden": 1
+        },
+        {
+            "id": "5e282156d215762a",
+            "nombre": "Ascenso",
+            "color": "#008000",
+            "posiciones": "1-2",
+            "orden": 1
+        },
+        {
+            "id": "a167ff8eb9890812",
+            "nombre": "Play-off Ascenso",
+            "color": "#40e0d0",
+            "posiciones": "3",
+            "orden": 1
+        },
+        {
+            "id": "31f5f1f5f1cec109",
+            "nombre": "Descenso",
+            "color": "#ff0000",
+            "posiciones": "17-18",
+            "orden": 1
+        }
+    ],
+    "14": [
+        {
+            "id": "597621d6d402a7be",
+            "nombre": "UEFA Europa League",
+            "color": "#40e0d0",
+            "posiciones": "5",
+            "orden": 1
+        },
+        {
+            "id": "94e138b3fdd13077",
+            "nombre": "UEFA Conference League",
+            "color": "#0000ff",
+            "posiciones": "6",
+            "orden": 1
+        },
+        {
+            "id": "a43c6fe70c9b102e",
+            "nombre": "Campeón",
+            "color": "#00ff00",
+            "posiciones": "1",
+            "orden": 1
+        },
+        {
+            "id": "89ab8863515a5c06",
+            "nombre": "UEFA Champions League",
+            "color": "#008000",
+            "posiciones": "1-4",
+            "orden": 2
+        },
+        {
+            "id": "16bc5f1d9b2cc811",
+            "nombre": "Descenso",
+            "color": "#ff0000",
+            "posiciones": "18-20",
+            "orden": 1
+        }
+    ]
+}
