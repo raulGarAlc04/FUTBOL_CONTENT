@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 type Props = {
   title?: string;
@@ -10,7 +10,34 @@ type Props = {
 export function Layout({ title, fullWidth, children }: Props) {
   const [navOpen, setNavOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const isAdmin = location.pathname.startsWith("/admin");
+  const isLoginPage = location.pathname === "/admin/login";
+  const [showSessionLogout, setShowSessionLogout] = useState(false);
+
+  useEffect(() => {
+    if (!isAdmin || isLoginPage) {
+      setShowSessionLogout(false);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/auth/config", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d: { requiresLogin?: boolean }) => {
+        if (!cancelled) setShowSessionLogout(Boolean(d.requiresLogin));
+      })
+      .catch(() => {
+        if (!cancelled) setShowSessionLogout(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin, isLoginPage, location.pathname]);
+
+  const logout = useCallback(async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    navigate("/admin/login", { replace: true });
+  }, [navigate]);
 
   useEffect(() => {
     setNavOpen(false);
@@ -84,9 +111,16 @@ export function Layout({ title, fullWidth, children }: Props) {
           </nav>
 
           {isAdmin ? (
-            <Link to="/" className="btn-admin btn-admin--ghost">
-              Web
-            </Link>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {showSessionLogout && !isLoginPage ? (
+                <button type="button" className="btn-admin btn-admin--ghost" onClick={() => void logout()} style={{ margin: 0 }}>
+                  Cerrar sesión
+                </button>
+              ) : null}
+              <Link to="/" className="btn-admin btn-admin--ghost">
+                Web
+              </Link>
+            </div>
           ) : (
             <Link to="/admin" className="btn-admin">
               Admin

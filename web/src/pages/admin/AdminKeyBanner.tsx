@@ -16,7 +16,7 @@ export function AdminKeyBanner() {
     <div className="admin-card" style={{ padding: "14px 18px", marginBottom: 18 }}>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "space-between" }}>
         <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-          Si configuraste <code style={{ color: "var(--accent-color)" }}>ADMIN_KEY</code> en el servidor, introdúcela aquí para usar el panel.
+          Si usas solo <code style={{ color: "var(--accent-color)" }}>ADMIN_KEY</code> (sin usuario/contraseña en <code>api/.env</code>), pégala aquí para las peticiones API. Con login por formulario no hace falta.
         </div>
         {!open ? (
           <button type="button" className="btn-admin" style={{ margin: 0 }} onClick={() => setOpen(true)}>

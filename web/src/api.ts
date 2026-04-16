@@ -12,8 +12,10 @@ async function parseJson<T>(res: Response): Promise<T> {
   }
 }
 
+const fetchDefaults: RequestInit = { credentials: "include" };
+
 export async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(path, { headers: { ...adminHeaders() } });
+  const res = await fetch(path, { ...fetchDefaults, headers: { ...adminHeaders() } });
   if (!res.ok) {
     const err = await parseJson<{ error?: string }>(res).catch(() => ({}) as { error?: string });
     throw new Error(err.error ?? res.statusText);
@@ -23,6 +25,7 @@ export async function apiGet<T>(path: string): Promise<T> {
 
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(path, {
+    ...fetchDefaults,
     method: "POST",
     headers: { "Content-Type": "application/json", ...adminHeaders() },
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -36,6 +39,7 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
 
 export async function apiPut<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(path, {
+    ...fetchDefaults,
     method: "PUT",
     headers: { "Content-Type": "application/json", ...adminHeaders() },
     body: JSON.stringify(body),
@@ -48,7 +52,7 @@ export async function apiPut<T>(path: string, body: unknown): Promise<T> {
 }
 
 export async function apiDelete<T>(path: string): Promise<T> {
-  const res = await fetch(path, { method: "DELETE", headers: { ...adminHeaders() } });
+  const res = await fetch(path, { ...fetchDefaults, method: "DELETE", headers: { ...adminHeaders() } });
   if (!res.ok) {
     const err = await parseJson<{ error?: string }>(res).catch(() => ({}) as { error?: string });
     throw new Error(err.error ?? res.statusText);

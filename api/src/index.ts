@@ -1,12 +1,14 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getPool } from "./db.js";
 import { sortClasificacion, type ClasRow } from "./clasificacion.js";
 import * as marks from "./marks.js";
+import * as auth from "./auth.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.chdir(path.resolve(__dirname, ".."));
@@ -14,21 +16,76 @@ process.chdir(path.resolve(__dirname, ".."));
 const app = express();
 const PORT = Number(process.env.PORT ?? 4000);
 
-app.use(cors({ origin: true }));
+app.use(cors({ origin: true, credentials: true }));
+app.use(cookieParser());
 app.use(express.json({ limit: "2mb" }));
 
 function requireAdmin(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const key = process.env.ADMIN_KEY?.trim();
-  if (!key) {
+  const adminKey = process.env.ADMIN_KEY?.trim();
+  if (adminKey && req.header("x-admin-key") === adminKey) {
     next();
     return;
   }
-  if (req.header("x-admin-key") !== key) {
+  const session = auth.verifySessionToken(req.cookies?.[auth.SESSION_COOKIE]);
+  if (session?.role === "admin") {
+    next();
+    return;
+  }
+  const cookieLogin = auth.isCookieLoginConfigured();
+  if (cookieLogin || adminKey) {
     res.status(401).json({ error: "No autorizado" });
     return;
   }
   next();
 }
+
+app.get("/api/auth/config", (_req, res) => {
+  res.json({
+    requiresLogin: auth.isCookieLoginConfigured(),
+  });
+});
+
+app.get("/api/auth/me", (req, res) => {
+  const session = auth.verifySessionToken(req.cookies?.[auth.SESSION_COOKIE]);
+  if (session?.role === "admin") {
+    res.json({ authenticated: true, user: { role: "admin" } });
+    return;
+  }
+  res.status(401).json({ authenticated: false });
+});
+
+app.post("/api/auth/login", (req, res) => {
+  if (!auth.isCookieLoginConfigured()) {
+    res.status(503).json({ error: "Login no configurado (JWT_SECRET, AUTH_USER, AUTH_PASSWORD en api/.env)" });
+    return;
+  }
+  const body = req.body as { username?: string; password?: string };
+  const username = String(body.username ?? "");
+  const password = String(body.password ?? "");
+  if (!auth.credentialsMatch(username, password)) {
+    res.status(401).json({ error: "Usuario o contraseña incorrectos" });
+    return;
+  }
+  try {
+    const token = auth.signSessionToken();
+    res.cookie(auth.SESSION_COOKIE, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Error al iniciar sesión" });
+  }
+});
+
+app.post("/api/auth/logout", (_req, res) => {
+  res.clearCookie(auth.SESSION_COOKIE, { path: "/" });
+  res.json({ ok: true });
+});
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
