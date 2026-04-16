@@ -1,5 +1,16 @@
-# Credenciales locales (copia db.example.php como db.php)
+# Credenciales locales (MySQL en api/.env — copia desde api/.env.example)
 db.php
+api/.env
+web/.env
+.env
+
+# Node
+node_modules/
+**/node_modules/
+
+# Build
+api/dist/
+web/dist/
 
 # Windows / IDE
 Thumbs.db
